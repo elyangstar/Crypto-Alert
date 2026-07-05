@@ -21,6 +21,20 @@ headers = {
 }
 
 # ---------------------------------------------------------------------------
+# [0단계: 업비트 한글 종목명 딕셔너리 생성 (오류 수정 부분)]
+# ---------------------------------------------------------------------------
+def get_korean_name_dict():
+    """업비트 API를 통해 티커와 한글 종목명 딕셔너리 생성"""
+    url = "https://api.upbit.com/v1/market/all"
+    try:
+        res = requests.get(url)
+        if res.status_code == 200:
+            return {item['market']: item['korean_name'] for item in res.json()}
+    except Exception as e:
+        print(f"⚠️ 종목명 로드 실패: {e}")
+    return {}
+
+# ---------------------------------------------------------------------------
 # [1단계: 업비트 변동성/거래량 상위 종목 추출]
 # ---------------------------------------------------------------------------
 def get_volatile_tickers(limit=60):
@@ -125,6 +139,10 @@ def send_telegram_message(message):
 # ---------------------------------------------------------------------------
 def main():
     print("🚀 가상화폐(업비트) 상승 예측 봇 가동 🚀")
+    
+    # 추가된 부분: 프로그램 시작 시 종목명 사전 불러오기
+    korean_names = get_korean_name_dict()
+    
     tickers = get_volatile_tickers(limit=60) # 상위 60개 탐색
     
     scored_coins = []
@@ -132,7 +150,8 @@ def main():
     for ticker in tickers:
         score, price = analyze_chart_score(ticker)
         if score > 0:
-            coin_name = pyupbit.get_korean_name(ticker) or ticker
+            # 수정된 부분: 불러온 사전에서 한글명 찾기
+            coin_name = korean_names.get(ticker, ticker)
             scored_coins.append({"ticker": ticker, "name": coin_name, "score": score, "price": price})
         time.sleep(0.1) # 업비트 API 호출 제한 방지
         
