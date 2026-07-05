@@ -3,7 +3,6 @@ name: Auto Crypto Alert
 on:
   schedule:
     - cron: '*/5 * * * *'
-  workflow_dispatch:
 
 jobs:
   run-stock-bot:
