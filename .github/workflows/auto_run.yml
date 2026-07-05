@@ -1,0 +1,30 @@
+name: Auto Crypto Alert
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-stock-bot:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 1. 내 코드 가져오기
+      uses: actions/checkout@v3
+
+    - name: 2. 파이썬 환경 설정
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: 3. 필수 도구 설치
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4 pandas ta openai lxml pyupbit
+
+    - name: 4. 로봇 실행
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: python crypto_robot.py
